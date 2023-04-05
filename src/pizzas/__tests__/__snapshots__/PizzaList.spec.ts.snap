@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PizzaList class When trying to add new pizza and everything went well given pizza should appear on list with given price 1`] = `
+PizzaList {
+  "list": [
+    {
+      "object": {
+        "id": "1",
+        "ingredients": Map {
+          "ingredient" => 1,
+        },
+        "name": "pizza",
+      },
+      "property": 100,
+    },
+  ],
+}
+`;
+
+exports[`PizzaList class When trying to delete pizza and everything went well Given pizza should be removed from pizza list 1`] = `
+PizzaList {
+  "list": [],
+}
+`;

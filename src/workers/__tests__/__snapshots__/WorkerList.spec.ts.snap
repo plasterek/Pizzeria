@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WorkerList class When trying to add worker and everything goes well Worker should appear in list 1`] = `
+WorkerList {
+  "list": [
+    {
+      "object": {
+        "id": "workerId",
+        "name": "name",
+        "occupation": "waiter",
+      },
+      "property": "available",
+    },
+  ],
+}
+`;
+
+exports[`WorkerList class When trying to remove worker and everything goes well Given worker should dissapear from list 1`] = `
+WorkerList {
+  "list": [],
+}
+`;

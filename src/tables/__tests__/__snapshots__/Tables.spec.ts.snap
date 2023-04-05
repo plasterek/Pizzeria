@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TableList class When trying to add table and everything went well Given table should appear on table list 1`] = `
+TableList {
+  "list": [
+    {
+      "object": {
+        "id": "tableId",
+        "number": 1,
+        "numberOfSeats": 5,
+      },
+      "property": "available",
+    },
+  ],
+}
+`;
+
+exports[`TableList class When trying to find free table with specified number of seats and everything went well It returns array with available tables 1`] = `
+[
+  {
+    "object": {
+      "id": "tableId",
+      "number": 1,
+      "numberOfSeats": 5,
+    },
+    "property": "available",
+  },
+]
+`;
+
+exports[`TableList class When trying to get table and everything went well It should return table with status 1`] = `
+{
+  "object": {
+    "id": "tableId",
+    "number": 1,
+    "numberOfSeats": 5,
+  },
+  "property": "available",
+}
+`;
+
+exports[`TableList class When trying to remove table and everything went well Given table should dissapear from table list 1`] = `
+TableList {
+  "list": [],
+}
+`;

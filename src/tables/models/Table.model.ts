@@ -1,4 +1,4 @@
-import { TStatus } from "../../utilities/models/Status.model";
+import { Status } from "../../utilities/models/Status.model";
 import { IGenericListObject } from "../../utilities/models/Generics.model";
 
 export interface ITable {
@@ -7,4 +7,4 @@ export interface ITable {
   readonly numberOfSeats: number;
 }
 
-export type ITableWithStatus = IGenericListObject<ITable, TStatus>;
+export type ITableWithStatus = IGenericListObject<ITable, Status>;

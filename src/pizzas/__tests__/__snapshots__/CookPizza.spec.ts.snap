@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CookPizza class When trying to reserve ingredients and everything went well Ingredients needed to make pizza should dissapear from ingredient list 1`] = `
+IngredientsList {
+  "list": [
+    {
+      "object": {
+        "id": "ingredientId",
+        "name": "ingredient",
+      },
+      "property": 0,
+    },
+  ],
+}
+`;

@@ -1,25 +1,26 @@
 import { List } from "../utilities/ListGeneric.service";
-import { IWorker, IWorkerWithStatus, TOccupation } from "./models/Worker.model";
-import { TStatus } from "../utilities/models/Status.model";
+import { IWorker, IWorkerWithStatus, Occupation } from "./models/Worker.model";
+import { Status } from "../utilities/models/Status.model";
+import { WorkerListException } from "./exceptions/WorkerList.exception";
 
-export class WorkerList extends List<IWorker, TStatus> {
+export class WorkerList extends List<IWorker, Status> {
   public addWorker(worker: IWorker): void {
     try {
       const workerExist = this.getObjectById(worker.id);
       if (workerExist) {
         throw new Error();
       }
-      const status: TStatus = "available";
+      const status: Status = Status.available;
       this.add(worker, status);
     } catch (err: any) {
-      throw new Error("Worker already exist");
+      throw new WorkerListException("Worker already exist");
     }
   }
   public removeWorker(worker: IWorker): void {
     try {
       this.delete(worker);
     } catch (err: any) {
-      throw new Error("Worker does not exist");
+      throw new WorkerListException("Worker does not exist");
     }
   }
   getWorker(workerId: string): IWorkerWithStatus {
@@ -30,10 +31,10 @@ export class WorkerList extends List<IWorker, TStatus> {
       }
       return workerExist;
     } catch (err: any) {
-      throw new Error("Worker does not exist");
+      throw new WorkerListException("Worker does not exist");
     }
   }
-  public findAvailableWorkers(occupation: TOccupation): IWorkerWithStatus[] | false {
+  public findAvailableWorkers(occupation: Occupation): IWorkerWithStatus[] | false {
     const occupationWorkers: IWorkerWithStatus[] = this.getList().filter(
       (worker) => worker.object.occupation === occupation
     );
@@ -52,13 +53,13 @@ export class WorkerList extends List<IWorker, TStatus> {
       if (!workerExist) {
         throw new Error();
       }
-      if (workerExist.property === "available") {
-        workerExist.property = "unavailable";
+      if (workerExist.property === Status.available) {
+        workerExist.property = Status.unavailable;
         return;
       }
-      workerExist.property = "available";
+      workerExist.property = Status.available;
     } catch (err: any) {
-      throw new Error("Worker does not exist");
+      throw new WorkerListException("Worker does not exist");
     }
   }
 }

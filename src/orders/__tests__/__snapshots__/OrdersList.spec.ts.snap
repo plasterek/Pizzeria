@@ -1,0 +1,72 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Orders list class When trying to add an order and everything went well Order should appear on order list 1`] = `
+OrdersList {
+  "finished": [],
+  "inRealization": [],
+  "list": [
+    {
+      "object": {
+        "cookId": "cookId",
+        "id": "orderId",
+        "pizzaWithQuantity": Map {
+          "pizza" => 1,
+        },
+        "tableId": "tableId",
+      },
+      "property": "1",
+    },
+  ],
+  "waiting": [],
+}
+`;
+
+exports[`Orders list class When trying to add order to realization and everything went well Order id should be added to orders in realization list 1`] = `
+OrdersList {
+  "finished": [],
+  "inRealization": [
+    "orderId",
+  ],
+  "list": [
+    {
+      "object": {
+        "cookId": "cookId",
+        "id": "orderId",
+        "pizzaWithQuantity": Map {
+          "pizza" => 1,
+        },
+        "tableId": "tableId",
+      },
+      "property": "1",
+    },
+  ],
+  "waiting": [],
+}
+`;
+
+exports[`Orders list class When trying to add order to realization and order was already added to waitlist Order id should be removed from waitlist 1`] = `[]`;
+
+exports[`Orders list class When trying to finish order and everything went well Given order id should be removed from realization list and appear in finished list 1`] = `
+OrdersList {
+  "finished": [
+    "orderId",
+  ],
+  "inRealization": [],
+  "list": [
+    {
+      "object": {
+        "cookId": "cookId",
+        "id": "orderId",
+        "pizzaWithQuantity": Map {
+          "pizza" => 1,
+        },
+        "tableId": "tableId",
+      },
+      "property": "1",
+    },
+  ],
+  "waiting": [],
+}
+`;
+
+exports[`Orders list class When trying to get list of pizzas waiting in que It should return array with IDs or empty array 1`] = `[]`;

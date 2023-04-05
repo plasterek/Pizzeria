@@ -1,20 +1,25 @@
 import { List } from "../utilities/ListGeneric.service";
 import { removeItemFromArray } from "../utilities/removeItemFromArray";
 import { IOrder, TOrderWithWaiterId } from "./models/Order.model";
+import { OrdersListException } from "./exceptions/OrdersList.exception";
 
 export class OrdersList extends List<IOrder, string> {
-  private waiting: string[] = [];
-  private inRealization: string[] = [];
-  private finished: string[] = [];
+  readonly waiting: string[] = [];
+  readonly inRealization: string[] = [];
+  readonly finished: string[] = [];
 
-  public makeOrder(order: IOrder, waiterId: string) {
-    const orderExist: TOrderWithWaiterId | undefined = this.getObjectById(order.id);
-    if (orderExist) {
-      throw new Error("Order already exist");
+  public makeOrder(order: IOrder, waiterId: string): void {
+    try {
+      const orderExist: TOrderWithWaiterId | undefined = this.getObjectById(order.id);
+      if (orderExist) {
+        throw new Error("Order already exist");
+      }
+      this.add(order, waiterId);
+    } catch (err: any) {
+      throw new OrdersListException(err.message);
     }
-    this.add(order, waiterId);
   }
-  public getWaitingPizzas() {
+  public getWaitingPizzas(): string[] {
     return this.waiting;
   }
   public addToWaitList(orderId: string): void {
@@ -29,7 +34,7 @@ export class OrdersList extends List<IOrder, string> {
       }
       this.waiting.push(orderId);
     } catch (err: any) {
-      throw new Error(err.message);
+      throw new OrdersListException(err.message);
     }
   }
   public addToRealisation(orderId: string): void {
@@ -48,13 +53,13 @@ export class OrdersList extends List<IOrder, string> {
       }
       this.inRealization.push(orderId);
     } catch (err: any) {
-      throw new Error(err.message);
+      throw new OrdersListException(err.message);
     }
   }
   public finishOrder(orderId: string): void {
     try {
       const orderExist: TOrderWithWaiterId | undefined = this.getObjectById(orderId);
-      if (orderExist) {
+      if (!orderExist) {
         throw new Error("Order does not exist");
       }
       const finished: boolean = this.checkIfOrderExistInList(orderId, this.finished);
@@ -68,7 +73,7 @@ export class OrdersList extends List<IOrder, string> {
       removeItemFromArray(this.inRealization, orderId);
       this.finished.push(orderId);
     } catch (err: any) {
-      throw new Error(err.message);
+      throw new OrdersListException(err.message);
     }
   }
   private checkIfOrderExistInList(orderId: string, list: string[]): boolean {

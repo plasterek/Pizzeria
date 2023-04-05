@@ -1,12 +1,15 @@
 import { IGenericListObject } from "../../utilities/models/Generics.model";
-import { TStatus } from "../../utilities/models/Status.model";
+import { Status } from "../../utilities/models/Status.model";
 
 export interface IWorker {
   readonly id: string;
   readonly name: string;
-  readonly occupation: TOccupation;
+  readonly occupation: Occupation;
 }
 
-export type IWorkerWithStatus = IGenericListObject<IWorker, TStatus>;
+export type IWorkerWithStatus = IGenericListObject<IWorker, Status>;
 
-export type TOccupation = "waiter" | "cook";
+export enum Occupation {
+  waiter = "waiter",
+  cook = "cook",
+}

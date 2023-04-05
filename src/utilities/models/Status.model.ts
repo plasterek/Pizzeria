@@ -1,1 +1,4 @@
-export type TStatus = "available" | "unavailable";
+export enum Status {
+  available = "available",
+  unavailable = "unavailable",
+}

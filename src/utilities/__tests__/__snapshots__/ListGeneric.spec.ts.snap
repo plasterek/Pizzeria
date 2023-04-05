@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`List generic class When trying to add object with property It should appear in item list 1`] = `
+List {
+  "list": [
+    {
+      "object": {
+        "id": "id",
+      },
+      "property": "string",
+    },
+  ],
+}
+`;
+
+exports[`List generic class When trying to delete object and everything went well Object should dissapear from list 1`] = `
+List {
+  "list": [],
+}
+`;

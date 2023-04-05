@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Ingredient list class When trying to delete ingredient from list and its the only ingredient on a list Ingredient list should be empty 1`] = `
+IngredientsList {
+  "list": [],
+}
+`;
+
+exports[`Ingredient list class When trying to get ingredient and everything went well It should return ingredient with quantity 1`] = `
+{
+  "object": {
+    "id": "1",
+    "name": "ingredient",
+  },
+  "property": 10,
+}
+`;

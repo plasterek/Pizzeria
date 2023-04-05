@@ -4,74 +4,63 @@ import { TOrderWithWaiterId } from "../orders/models/Order.model";
 import { PizzaList } from "../pizzas/PizzaList.service";
 import { ITableWithStatus } from "../tables/models/Table.model";
 import { TableList } from "../tables/Tables.service";
-import { IWorkerWithStatus, TOccupation } from "../workers/models/Worker.model";
+import { IWorkerWithStatus, Occupation } from "../workers/models/Worker.model";
 import { WorkerList } from "../workers/WorkerList.service";
 import { v4 as newId } from "uuid";
 import { IngredientsList } from "../ingredients/IngredientsList.service";
 import { CookPizza } from "../pizzas/CookPizza.service";
+import { PizzeriaException } from "./exceptions/Pizzeria.exception";
 
 export class Pizzeria {
-  private workers: WorkerList;
-  private tables: TableList;
-  private cooking: CookPizza;
-  private orders: OrdersList;
+  private readonly cooking: CookPizza;
   constructor(
-    workers: WorkerList,
-    tables: TableList,
-    pizzaList: PizzaList,
-    orders: OrdersList,
-    ingredients: IngredientsList
+    private readonly workers: WorkerList,
+    private readonly tables: TableList,
+    private readonly pizzaList: PizzaList,
+    private readonly orders: OrdersList,
+    private readonly ingredients: IngredientsList
   ) {
-    this.workers = workers;
-    this.tables = tables;
-    this.cooking = new CookPizza(pizzaList, ingredients);
-    this.orders = orders;
+    this.cooking = new CookPizza(this.pizzaList, this.ingredients);
   }
-  makeAnOrder(pizzas: Map<string, number>, orderType: "take-out" | "on-site", numberOfPeople: number): number {
+  public makeTakeOutOrder(pizzas: Map<string, number>): number {
     try {
-      const waiter: IWorkerWithStatus | false = this.getAvailableWorker("waiter");
+      const waiter: IWorkerWithStatus | false = this.getAvailableWorker(Occupation.waiter);
       if (!waiter) {
         throw new Error("No waiter available to take order");
       }
-      if (orderType === "take-out") {
-        const cook: IWorkerWithStatus | false = this.getAvailableWorker("cook");
-        const order: IOrder = { id: newId(), tableId: "0", cookId: "0", pizzaWithQuantity: pizzas };
-        if (cook) {
-          order.cookId = cook.object.id;
-          this.reserveIngredients(pizzas);
-          this.orders.makeOrder(order, waiter.object.id);
-          this.orders.addToRealisation(order.id);
-          this.workers.changeWorkerStatus(cook.object.id);
-          this.workers.changeWorkerStatus(waiter.object.id);
-          return this.cooking.countPrice(pizzas);
-        }
-        this.reserveIngredients(pizzas);
-        this.orders.makeOrder(order, waiter.object.id);
-        this.orders.addToWaitList(order.id);
-        this.workers.changeWorkerStatus(waiter.object.id);
+      const cook: IWorkerWithStatus | false = this.getAvailableWorker(Occupation.cook);
+      const order: IOrder = { id: newId(), tableId: "0", cookId: "0", pizzaWithQuantity: pizzas };
+      if (cook) {
+        order.cookId = cook.object.id;
+        this.orderWhenCookIsAvailable(order, waiter, cook);
         return this.cooking.countPrice(pizzas);
       }
-      const table: ITableWithStatus = this.getAvailableTable(numberOfPeople);
-      const cook: IWorkerWithStatus | false = this.getAvailableWorker("cook");
-      const order: IOrder = { id: newId(), tableId: table.object.id, cookId: "0", pizzaWithQuantity: pizzas };
-      if (!cook) {
-        this.reserveIngredients(pizzas);
-        this.tables.changeTableStatus(table.object.id);
-        this.orders.makeOrder(order, waiter.object.id);
-        this.orders.addToWaitList(order.id);
-        this.workers.changeWorkerStatus(waiter.object.id);
-        return this.cooking.countPrice(pizzas);
-      }
-      this.reserveIngredients(pizzas);
-      order.cookId = cook.object.id;
-      this.tables.changeTableStatus(table.object.id);
-      this.orders.makeOrder(order, waiter.object.id);
-      this.orders.addToRealisation(order.id);
-      this.workers.changeWorkerStatus(cook.object.id);
-      this.workers.changeWorkerStatus(waiter.object.id);
+      this.orderWhenCookNotAvailable(order, waiter);
       return this.cooking.countPrice(pizzas);
     } catch (err: any) {
-      throw new Error(err.message);
+      throw new PizzeriaException(err.message);
+    }
+  }
+  public makeOnSiteOrder(pizzas: Map<string, number>, numberOfPeople: number): number {
+    try {
+      const waiter: IWorkerWithStatus | false = this.getAvailableWorker(Occupation.waiter);
+      if (!waiter) {
+        throw new Error("No waiter available to take order");
+      }
+      const table: ITableWithStatus = this.getAvailableTable(numberOfPeople);
+      const cook: IWorkerWithStatus | false = this.getAvailableWorker(Occupation.cook);
+      const order: IOrder = { id: newId(), tableId: table.object.id, cookId: "0", pizzaWithQuantity: pizzas };
+      if (!cook) {
+        this.orderWhenCookNotAvailable(order, waiter);
+        this.tables.changeTableStatus(table.object.id);
+        return this.cooking.countPrice(pizzas);
+      }
+      order.cookId = cook.object.id;
+      this.orderWhenCookIsAvailable(order, waiter, cook);
+      this.tables.changeTableStatus(table.object.id);
+      return this.cooking.countPrice(pizzas);
+    } catch (err: any) {
+      throw new PizzeriaException(err.message);
     }
   }
   public tryToPushWaitingOrder(): void {
@@ -79,7 +68,7 @@ export class Pizzeria {
     if (waitingOrders.length === 0) {
       return;
     }
-    const cook: IWorkerWithStatus | false = this.getAvailableWorker("cook");
+    const cook: IWorkerWithStatus | false = this.getAvailableWorker(Occupation.cook);
     if (!cook) {
       return;
     }
@@ -87,12 +76,11 @@ export class Pizzeria {
     const waitingOrder: TOrderWithWaiterId | undefined = this.orders.getObjectById(waitingOrderId);
     if (waitingOrder) {
       waitingOrder.object.cookId = cook.object.id;
-      this.reserveIngredients(waitingOrder.object.pizzaWithQuantity);
       this.orders.addToRealisation(waitingOrder.object.id);
       this.workers.changeWorkerStatus(cook.object.id);
     }
   }
-  public finishOrder(orderId: string) {
+  public finishOrder(orderId: string): void {
     try {
       const order: TOrderWithWaiterId | undefined = this.orders.getObjectById(orderId);
       if (!order) {
@@ -108,10 +96,10 @@ export class Pizzeria {
         this.tables.changeTableStatus(tableId);
       }
     } catch (err: any) {
-      throw new Error(err.message);
+      throw new PizzeriaException(err.message);
     }
   }
-  private getAvailableWorker(occupation: TOccupation): IWorkerWithStatus | false {
+  private getAvailableWorker(occupation: Occupation): IWorkerWithStatus | false {
     const availableWorkers: IWorkerWithStatus[] | false = this.workers.findAvailableWorkers(occupation);
     if (!availableWorkers) {
       return false;
@@ -127,12 +115,25 @@ export class Pizzeria {
       this.tables.changeTableStatus(table.object.id);
       return table;
     } catch (err: any) {
-      throw new Error(err.message);
+      throw new PizzeriaException(err.message);
     }
   }
   private reserveIngredients(pizzas: Map<string, number>) {
     pizzas.forEach((value, key) => {
       this.cooking.reserveIngredients(key, value);
     });
+  }
+  private orderWhenCookNotAvailable(order: IOrder, waiter: IWorkerWithStatus): void {
+    this.reserveIngredients(order.pizzaWithQuantity);
+    this.orders.makeOrder(order, waiter.object.id);
+    this.orders.addToWaitList(order.id);
+    this.workers.changeWorkerStatus(waiter.object.id);
+  }
+  private orderWhenCookIsAvailable(order: IOrder, waiter: IWorkerWithStatus, cook: IWorkerWithStatus): void {
+    this.reserveIngredients(order.pizzaWithQuantity);
+    this.orders.makeOrder(order, waiter.object.id);
+    this.orders.addToRealisation(order.id);
+    this.workers.changeWorkerStatus(cook.object.id);
+    this.workers.changeWorkerStatus(waiter.object.id);
   }
 }

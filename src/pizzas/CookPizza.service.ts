@@ -2,14 +2,10 @@ import { IngredientsList } from "../ingredients/IngredientsList.service";
 import { TIngredientWithQuantity } from "../ingredients/models/Ingredient.model";
 import { TPizzaWithPrice } from "./models/Pizza.model";
 import { PizzaList } from "./PizzaList.service";
+import { CookPizzaException } from "./exceptions/CookPizza.exception";
 
 export class CookPizza {
-  private readonly availablePizza: PizzaList;
-  private readonly ingredients: IngredientsList;
-  constructor(availablePizza: PizzaList, ingredients: IngredientsList) {
-    this.availablePizza = availablePizza;
-    this.ingredients = ingredients;
-  }
+  constructor(private readonly availablePizza: PizzaList, private readonly ingredients: IngredientsList) {}
   public reserveIngredients(pizzaId: string, pizzaQuantity: number): void {
     try {
       const pizzaExist: TPizzaWithPrice = this.availablePizza.getPizza(pizzaId);
@@ -19,16 +15,20 @@ export class CookPizza {
         this.ingredients.useIngredient(ingredient.object.id, quantity * pizzaQuantity);
       });
     } catch (err: any) {
-      throw new Error(err.message);
+      throw new CookPizzaException(err.message);
     }
   }
   public countPrice(pizzaList: Map<string, number>): number {
-    let finalPrice: number = 0;
-    pizzaList.forEach((quanitytyOfPizza, pizzaId) => {
-      const pizza: TPizzaWithPrice = this.availablePizza.getPizza(pizzaId);
-      finalPrice += pizza.property * quanitytyOfPizza;
-      return;
-    });
-    return finalPrice;
+    try {
+      let finalPrice: number = 0;
+      pizzaList.forEach((quanitytyOfPizza, pizzaId) => {
+        const pizza: TPizzaWithPrice = this.availablePizza.getPizza(pizzaId);
+        finalPrice += pizza.property * quanitytyOfPizza;
+        return;
+      });
+      return finalPrice;
+    } catch (err: any) {
+      throw new CookPizzaException(err.message);
+    }
   }
 }
